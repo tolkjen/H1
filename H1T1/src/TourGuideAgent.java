@@ -5,14 +5,34 @@ import jade.lang.acl.*;
 import jade.proto.*;
 import jade.domain.*;
 
+/**
+ * Tour Guide agent class. Uses CyclicBehaviour, TickerBehaviour, AcheiveREInitiator.
+ * 
+ * @author tolkjen
+ *
+ */
 @SuppressWarnings("serial")
 public class TourGuideAgent extends Agent {
-	// Agent IDs
+	/*
+	 * Curator agent identifier.
+	 */
 	private AID aidCurator = new AID("Curator", AID.ISLOCALNAME);
 		
+	/**
+	 * Prints hello message, awaits for requests and prints text message every 5 s.
+	 * CyclicBehaviour waits for tour requests and then contacts Curator agent using
+	 * CuratorInitiator class.
+	 */
 	protected void setup() {
+		/*
+		 * Hello message
+		 */
 		System.out.println("Tour Guide: begin operation");
 		
+		/*
+		 * CyclicBehaviour implemented as inner class. Uses block() in order
+		 * to save CPU.
+		 */
 		addBehaviour(new CyclicBehaviour(this) {
 			public void action() {
 				MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.REQUEST);
@@ -32,6 +52,9 @@ public class TourGuideAgent extends Agent {
 			}
 		});
 		
+		/*
+		 * Repetitive behavior which prints text every 5 s.
+		 */
 		addBehaviour(new TickerBehaviour(this, 5000) {
 			protected void onTick() {
 				System.out.println("Tour Guide: active");
@@ -39,6 +62,14 @@ public class TourGuideAgent extends Agent {
 		});
 	}
 	
+	/**
+	 * Works as a talker between Tour Guide agent and Curator Agent. It sends
+	 * information back to Profiler agent about success or failure in communication
+	 * with Curator agent.
+	 * 
+	 * @author tolkjen
+	 *
+	 */
 	private class CuratorInitiator extends AchieveREInitiator {
 		private ACLMessage profilerMessage;
 		

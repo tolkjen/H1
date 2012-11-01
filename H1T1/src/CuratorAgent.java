@@ -5,11 +5,24 @@ import jade.domain.*;
 import jade.domain.FIPAAgentManagement.NotUnderstoodException;
 import jade.domain.FIPAAgentManagement.RefuseException;
 
+/**
+ * Curator Agent class. Uses AchieveREResponder behaviors. 
+ * 
+ * @author tolkjen
+ *
+ */
 @SuppressWarnings("serial")
 public class CuratorAgent extends Agent {
+	/**
+	 * Adds two behaviors - one listening for tour requests from Tour Guide agent,
+	 * second waiting for details requests from Profiler agent.
+	 */
 	protected void setup() {
 		System.out.println("Curator: begin operation");
 		
+		/*
+		 * Implementing responding behavior for Tour Guide agent requests.
+		 */
 		MessageTemplate mt = MessageTemplate.and(AchieveREResponder.createMessageTemplate(
 				FIPANames.InteractionProtocol.FIPA_REQUEST),
 				MessageTemplate.MatchContent("request-tour-guide")); 
@@ -30,6 +43,9 @@ public class CuratorAgent extends Agent {
 			} 
 		});
 		
+		/*
+		 * Implementing responding behavior for Profiler agent requests.
+		 */
 		MessageTemplate mt2 = MessageTemplate.and(AchieveREResponder.createMessageTemplate(
 				FIPANames.InteractionProtocol.FIPA_REQUEST),
 				MessageTemplate.MatchContent("request-tour-details")); 
