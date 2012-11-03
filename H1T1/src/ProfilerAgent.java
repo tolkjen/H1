@@ -26,8 +26,6 @@ public class ProfilerAgent extends Agent {
 	 * Agent identifiers of curator and tour guide agents. They are temporary,
 	 * since profiler agent will figure their IDs from DF.
 	 */
-	//private AID aidTourGuide = new AID("TourGuide", AID.ISLOCALNAME);
-	//private AID aidCurator = new AID("Curator", AID.ISLOCALNAME);
 	
 	/**
 	 * Prints a hello message and creates a sequential behavior. 
@@ -56,11 +54,6 @@ public class ProfilerAgent extends Agent {
 		/*
 		 * The Profiler looks for the registered Tour Guides.
 		 */
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
 		
 		DFAgentDescription template = new DFAgentDescription(); 
 		ServiceDescription sd = new ServiceDescription(); 
@@ -70,10 +63,10 @@ public class ProfilerAgent extends Agent {
 			DFAgentDescription[] result = DFService.search(this, template); 
 			for (int i = 0; i < result.length; ++i) {
 				initTourRequest.addReceiver(result[i].getName()); 
-			}
-		} catch (FIPAException fe) {
+				}
+		}   catch (FIPAException fe) {
 			fe.printStackTrace();
-		}
+			}
 		
 		TourGuideInitiator initGuide = new TourGuideInitiator(this, initTourRequest);
 		
@@ -87,11 +80,6 @@ public class ProfilerAgent extends Agent {
 		/*
 		 * The Profiler looks for the registered curators.
 		 */
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
 		
 		template = new DFAgentDescription(); 
 		sd = new ServiceDescription(); 
@@ -101,10 +89,10 @@ public class ProfilerAgent extends Agent {
 			DFAgentDescription[] result = DFService.search(this, template); 
 			for (int i = 0; i < result.length; ++i) {
 				detailTourRequest.addReceiver(result[i].getName()); 
-			}
-		} catch (FIPAException fe) {
+				}
+		}   catch (FIPAException fe) {
 			fe.printStackTrace();
-		}
+			}
 		
 		CuratorInitiator initCurator = new CuratorInitiator(this, detailTourRequest);
 		

@@ -30,18 +30,18 @@ public class TourGuideAgent extends Agent {
 		System.out.println(this.getAID().getLocalName() + ": begin operation");
 
 		// Register the tour guide service in the yellow pages.
-		DFAgentDescription dfd = new DFAgentDescription(); 
-		dfd.setName(getAID()); 
-		ServiceDescription sd = new ServiceDescription(); 
-		sd.setType("tour-guide"); 
-		sd.setName(this.getAID().getLocalName()); 
-		dfd.addServices(sd);
-		try { 
-			DFService.register(this, dfd);
-			System.out.println(this.getAID().getLocalName() + " Registered");
-		} catch (FIPAException fe) {
-			fe.printStackTrace();
-		}
+				DFAgentDescription dfd = new DFAgentDescription(); 
+				dfd.setName(getAID()); 
+				ServiceDescription sd = new ServiceDescription(); 
+				sd.setType("tour-guide"); 
+				sd.setName(this.getAID().getLocalName()); 
+				dfd.addServices(sd);
+				try { 
+					DFService.register(this, dfd);
+					System.out.println(this.getAID().getLocalName() + " Registered");
+				} catch (FIPAException fe) {
+					fe.printStackTrace();
+				}
 		
 		/*
 		 * CyclicBehaviour implemented as inner class. Uses block() in order
@@ -69,10 +69,10 @@ public class TourGuideAgent extends Agent {
 						DFAgentDescription[] result = DFService.search(myAgent, template); 
 						for (int i = 0; i < result.length; ++i) {
 							msgCurator.addReceiver(result[i].getName()); 
-						}
-					} catch (FIPAException fe) {
+							}
+					}   catch (FIPAException fe) {
 						fe.printStackTrace();
-					}
+						}
 					
 					addBehaviour(new CuratorInitiator(myAgent, msgCurator, msg));
 				} else {
