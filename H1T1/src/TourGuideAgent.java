@@ -1,9 +1,10 @@
 import jade.core.Agent;
-import jade.core.AID;
 import jade.core.behaviours.*;
 import jade.lang.acl.*;
 import jade.proto.*;
 import jade.domain.*;
+import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.FIPAAgentManagement.ServiceDescription;
 
 /**
  * Tour Guide agent class. Uses CyclicBehaviour, TickerBehaviour, AcheiveREInitiator.
@@ -16,7 +17,6 @@ public class TourGuideAgent extends Agent {
 	/*
 	 * Curator agent identifier.
 	 */
-	private AID aidCurator = new AID("Curator", AID.ISLOCALNAME);
 		
 	/**
 	 * Prints hello message, awaits for requests and prints text message every 5 s.
@@ -27,7 +27,21 @@ public class TourGuideAgent extends Agent {
 		/*
 		 * Hello message
 		 */
-		System.out.println("Tour Guide: begin operation");
+		System.out.println(this.getAID().getLocalName() + ": begin operation");
+
+		// Register the tour guide service in the yellow pages.
+		DFAgentDescription dfd = new DFAgentDescription(); 
+		dfd.setName(getAID()); 
+		ServiceDescription sd = new ServiceDescription(); 
+		sd.setType("tour-guide"); 
+		sd.setName(this.getAID().getLocalName()); 
+		dfd.addServices(sd);
+		try { 
+			DFService.register(this, dfd);
+			System.out.println(this.getAID().getLocalName() + " Registered");
+		} catch (FIPAException fe) {
+			fe.printStackTrace();
+		}
 		
 		/*
 		 * CyclicBehaviour implemented as inner class. Uses block() in order
@@ -38,12 +52,27 @@ public class TourGuideAgent extends Agent {
 				MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.REQUEST);
 				ACLMessage msg = myAgent.receive(mt);
 				if (msg != null) {
-					System.out.println("Tour Guide: request from "+msg.getSender().getName());
+					System.out.println(myAgent.getAID().getLocalName() + ": request from "+msg.getSender().getName());
 					
 					ACLMessage msgCurator = new ACLMessage(ACLMessage.REQUEST);
 					msgCurator.setProtocol(FIPANames.InteractionProtocol.FIPA_REQUEST);
 					msgCurator.setContent("request-tour-guide");
-					msgCurator.addReceiver(aidCurator);
+					
+					/*
+					 * The Tour Guide looks for the registered Curators.
+					 */
+					DFAgentDescription template = new DFAgentDescription(); 
+					ServiceDescription sd = new ServiceDescription(); 
+					sd.setType("curator"); 
+					template.addServices(sd);
+					try { 
+						DFAgentDescription[] result = DFService.search(myAgent, template); 
+						for (int i = 0; i < result.length; ++i) {
+							msgCurator.addReceiver(result[i].getName()); 
+						}
+					} catch (FIPAException fe) {
+						fe.printStackTrace();
+					}
 					
 					addBehaviour(new CuratorInitiator(myAgent, msgCurator, msg));
 				} else {
@@ -57,9 +86,10 @@ public class TourGuideAgent extends Agent {
 		 */
 		addBehaviour(new TickerBehaviour(this, 5000) {
 			protected void onTick() {
-				System.out.println("Tour Guide: active");
+				System.out.println(myAgent.getAID().getLocalName() + ": active");
 			}
 		});
+		
 	}
 	
 	/**
@@ -79,7 +109,7 @@ public class TourGuideAgent extends Agent {
 		}
 		
 		protected void handleFailure(ACLMessage failure) {
-			System.out.println("Tour Guide: curator failure ("+failure.getContent()+")");
+			System.out.println(myAgent.getAID().getLocalName() + ": curator failure ("+failure.getContent()+")");
 			ACLMessage msg = profilerMessage.createReply();
 			msg.setPerformative(ACLMessage.FAILURE);
 			msg.setContent("curator-connection-failure");
@@ -87,7 +117,7 @@ public class TourGuideAgent extends Agent {
 		}
 		
 		protected void handleInform(ACLMessage inform) {
-			System.out.println("Tour Guide: response from Curator ("+inform.getContent()+")");
+			System.out.println(myAgent.getAID().getLocalName() + ": response from Curator ("+inform.getContent()+")");
 			ACLMessage msg = profilerMessage.createReply();
 			msg.setPerformative(ACLMessage.INFORM);
 			msg.setContent(inform.getContent());

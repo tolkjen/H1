@@ -1,9 +1,10 @@
 import jade.core.Agent;
-import jade.core.AID;
 import jade.core.behaviours.*;
-import jade.lang.acl.ACLMessage;
+import jade.lang.acl.*;
 import jade.proto.*;
 import jade.domain.*;
+import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.FIPAAgentManagement.ServiceDescription;
 
 /**
  * Profiler agent class. Uses OneShotBehaviour, FSMBehaviour, SequentialBehaviour,
@@ -25,8 +26,8 @@ public class ProfilerAgent extends Agent {
 	 * Agent identifiers of curator and tour guide agents. They are temporary,
 	 * since profiler agent will figure their IDs from DF.
 	 */
-	private AID aidTourGuide = new AID("TourGuide", AID.ISLOCALNAME);
-	private AID aidCurator = new AID("Curator", AID.ISLOCALNAME);
+	//private AID aidTourGuide = new AID("TourGuide", AID.ISLOCALNAME);
+	//private AID aidCurator = new AID("Curator", AID.ISLOCALNAME);
 	
 	/**
 	 * Prints a hello message and creates a sequential behavior. 
@@ -42,7 +43,7 @@ public class ProfilerAgent extends Agent {
 		/*
 		 * Hello message.
 		 */
-		System.out.println("Profiler: begin operation");
+		System.out.println(this.getAID().getLocalName() + ": begin operation");
 		
 		/* 
 		 * Request sent to the tour guide. It uses TourGuideInitiator class to
@@ -51,7 +52,29 @@ public class ProfilerAgent extends Agent {
 		ACLMessage initTourRequest = new ACLMessage(ACLMessage.REQUEST);
 		initTourRequest.setProtocol(FIPANames.InteractionProtocol.FIPA_REQUEST);
 		initTourRequest.setContent("request-tour-guide");
-		initTourRequest.addReceiver(aidTourGuide);
+		
+		/*
+		 * The Profiler looks for the registered Tour Guides.
+		 */
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		
+		DFAgentDescription template = new DFAgentDescription(); 
+		ServiceDescription sd = new ServiceDescription(); 
+		sd.setType("tour-guide"); 
+		template.addServices(sd);
+		try { 
+			DFAgentDescription[] result = DFService.search(this, template); 
+			for (int i = 0; i < result.length; ++i) {
+				initTourRequest.addReceiver(result[i].getName()); 
+			}
+		} catch (FIPAException fe) {
+			fe.printStackTrace();
+		}
+		
 		TourGuideInitiator initGuide = new TourGuideInitiator(this, initTourRequest);
 		
 		/*
@@ -60,7 +83,29 @@ public class ProfilerAgent extends Agent {
 		ACLMessage detailTourRequest = new ACLMessage(ACLMessage.REQUEST);
 		detailTourRequest.setProtocol(FIPANames.InteractionProtocol.FIPA_REQUEST);
 		detailTourRequest.setContent("request-tour-details");
-		detailTourRequest.addReceiver(aidCurator);
+
+		/*
+		 * The Profiler looks for the registered curators.
+		 */
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		
+		template = new DFAgentDescription(); 
+		sd = new ServiceDescription(); 
+		sd.setType("curator"); 
+		template.addServices(sd);
+		try { 
+			DFAgentDescription[] result = DFService.search(this, template); 
+			for (int i = 0; i < result.length; ++i) {
+				detailTourRequest.addReceiver(result[i].getName()); 
+			}
+		} catch (FIPAException fe) {
+			fe.printStackTrace();
+		}
+		
 		CuratorInitiator initCurator = new CuratorInitiator(this, detailTourRequest);
 		
 		/*
@@ -91,7 +136,7 @@ public class ProfilerAgent extends Agent {
 		seqBeh.addSubBehaviour(fsm);
 		seqBeh.addSubBehaviour(new OneShotBehaviour(this) {
 			public void action() {
-				System.out.println("Profiler: closing");
+				System.out.println(myAgent.getAID().getLocalName() + ": closing");
 			}
 			public int onEnd() {
 				myAgent.doDelete();
@@ -117,13 +162,13 @@ public class ProfilerAgent extends Agent {
 		
 		protected void handleInform(ACLMessage inform) {
 			String text = inform.getContent();
-			System.out.println("Profiler: response from Tour Guide ("+text+")");
+			System.out.println(myAgent.getAID().getLocalName() + ": response from Tour Guide ("+text+")");
 			exitCode = 0;
 		}
 		
 		protected void handleFailure(ACLMessage failure) {
 			String text = failure.getContent();
-			System.out.println("Profiler: Tour Guide failure ("+text+")");
+			System.out.println(myAgent.getAID().getLocalName() + ": Tour Guide failure ("+text+")");
 			exitCode = 1;
 		}
 		
@@ -148,13 +193,13 @@ public class ProfilerAgent extends Agent {
 		
 		protected void handleInform(ACLMessage inform) {
 			String text = inform.getContent();
-			System.out.println("Profiler: response from Curator ("+text+")");
+			System.out.println(myAgent.getAID().getLocalName() + ": response from Curator ("+text+")");
 			exitCode = 0;
 		}
 		
 		protected void handleFailure(ACLMessage failure) {
 			String text = failure.getContent();
-			System.out.println("Profiler: Curator failure ("+text+")");
+			System.out.println(myAgent.getAID().getLocalName() + ": Curator failure ("+text+")");
 			exitCode = 1;
 		}
 		
