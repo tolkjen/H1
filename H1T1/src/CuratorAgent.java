@@ -73,7 +73,7 @@ public class CuratorAgent extends Agent {
 		dfd.setName(getAID()); 
 		ServiceDescription sd = new ServiceDescription(); 
 		sd.setType("curator"); 
-		sd.setName(this.getAID().getLocalName()); 
+		sd.setName("Curator"); 
 		dfd.addServices(sd);
 		try { 
 			DFService.register(this, dfd);
