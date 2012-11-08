@@ -21,7 +21,7 @@ public class CuratorAgent extends Agent {
 	 */
 	protected void setup() {
 		System.out.println(this.getAID().getLocalName() + ": begin operation");
-		
+
 		/*
 		 * Implementing responding behavior for Tour Guide agent requests.
 		 */
@@ -35,7 +35,7 @@ public class CuratorAgent extends Agent {
 				agree.setPerformative(ACLMessage.AGREE);
 				return agree;
 			}
-			
+
 			protected ACLMessage prepareResultNotification(ACLMessage request, ACLMessage response) { 
 				System.out.println(myAgent.getAID().getLocalName() + ": sending data to "+request.getSender().getName());
 				ACLMessage informDone = request.createReply(); 
@@ -44,7 +44,7 @@ public class CuratorAgent extends Agent {
 				return informDone; 
 			} 
 		});
-		
+
 		/*
 		 * Implementing responding behavior for Profiler agent requests.
 		 */
@@ -58,7 +58,7 @@ public class CuratorAgent extends Agent {
 				agree.setPerformative(ACLMessage.AGREE);
 				return agree;
 			}
-			
+
 			protected ACLMessage prepareResultNotification(ACLMessage request, ACLMessage response) { 
 				System.out.println(myAgent.getAID().getLocalName() + ": sending data to "+request.getSender().getName());
 				ACLMessage informDone = request.createReply(); 
@@ -73,7 +73,7 @@ public class CuratorAgent extends Agent {
 		dfd.setName(getAID()); 
 		ServiceDescription sd = new ServiceDescription(); 
 		sd.setType("curator"); 
-		sd.setName(this.getAID().getLocalName()); 
+		sd.setName("Curator"); 
 		dfd.addServices(sd);
 		try { 
 			DFService.register(this, dfd);
