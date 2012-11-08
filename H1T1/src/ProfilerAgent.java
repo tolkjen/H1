@@ -131,7 +131,7 @@ public class ProfilerAgent extends Agent {
 				return super.onEnd();
 			}
 		});
-		addBehaviour(seqBeh);
+		//addBehaviour(seqBeh);
 	} 
 
 	/**
