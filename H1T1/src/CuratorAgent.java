@@ -17,7 +17,7 @@ import jade.domain.FIPAAgentManagement.ServiceDescription;
 @SuppressWarnings("serial")
 public class CuratorAgent extends Agent {
 	/**
-	 * Adds two behaviors - one listening for tour requests from Tour Guide agent,
+	 * Adds three behaviors - one listening for tour requests from Tour Guide agent,
 	 * second waiting for details requests from Profiler agent.
 	 */
 	protected void setup() {
@@ -36,6 +36,11 @@ public class CuratorAgent extends Agent {
 		}
 		System.out.println(getLocalName() + ": begin operation");
 		
+		/*
+		 * Add a behavior which does a job of responding to dutch auction
+		 * initiator. Use strategy object, which given new offers by initiator,
+		 * updates acceptable price for curator.
+		 */
 		MessageTemplate template = MessageTemplate.and(
 				MessageTemplate.MatchProtocol(FIPANames.InteractionProtocol.FIPA_DUTCH_AUCTION),
 				MessageTemplate.MatchPerformative(ACLMessage.CFP) );
@@ -106,6 +111,9 @@ public class CuratorAgent extends Agent {
 		System.out.println(getAID().getLocalName() + ": terminating...");
 	}
 	
+	/**
+	 * This class handles responding to dutch auction messages.
+	 */
 	private class DutchResponder extends ContractNetResponder {
 		
 		private CuratorStrategy strategy;
@@ -153,6 +161,11 @@ public class CuratorAgent extends Agent {
 		}
 	}
 	
+	/**
+	 * This class gathers information about previous offers given by initiator
+	 * and calculates the acceptable price for curator. Formula of new price
+	 * is to be implemented in addOffer() method.
+	 */
 	private class CuratorStrategy {
 		//private long startingPrice;
 		private long currentPrice;
@@ -170,7 +183,11 @@ public class CuratorAgent extends Agent {
 		
 		public void addOffer(long price) {
 			offers.add(price);
-			//currentPrice += 200;
+			
+			/*
+			 * New price. In this case, regardless of offer history.
+			 */
+			currentPrice += 100;
 		}
 	}
 }

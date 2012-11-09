@@ -8,6 +8,12 @@ import jade.domain.FIPANames;
 import java.util.Date;
 import java.util.Vector;
 
+/**
+ * Class initiates dutch auction and performs it together with curator agents.
+ * 
+ * @author tolkjen
+ *
+ */
 @SuppressWarnings("serial")
 public class ArtistManagerAgent extends Agent {
 
@@ -37,6 +43,12 @@ public class ArtistManagerAgent extends Agent {
 		System.out.println(getAID().getLocalName() + ": terminating...");
 	}
 	
+	/**
+	 * Runs dutch auction.
+	 * 
+	 * @author tolkjen
+	 *
+	 */
 	private class DutchInitiator extends ContractNetInitiator {
 		
 		private int roundNumber;
@@ -123,6 +135,12 @@ public class ArtistManagerAgent extends Agent {
 		}
 	}
 	
+	/**
+	 * This class is used to get a price of a product in each auction round.
+	 * 
+	 * @author tolkjen
+	 *
+	 */
 	private class ManagerStrategy {
 		private final long highestPrice = 1000;
 		private final long lowestPrice = 100;
@@ -138,7 +156,7 @@ public class ArtistManagerAgent extends Agent {
 		}
 		
 		public void nextRound() {
-			currentPrice = Math.round(currentPrice * 0.5);
+			currentPrice = Math.round(currentPrice * 0.75);
 			if (currentPrice <= lowestPrice) {
 				currentPrice = lowestPrice;
 			}
