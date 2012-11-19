@@ -2,39 +2,100 @@ import jade.core.Agent;
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ContractNetInitiator;
+import jade.proto.SubscriptionInitiator;
 import jade.util.leap.Iterator;
+import jade.domain.DFService;
+import jade.domain.FIPAException;
 import jade.domain.FIPANames;
 
 import java.util.Date;
 import java.util.Vector;
 
+import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.FIPAAgentManagement.SearchConstraints;
+import jade.domain.FIPAAgentManagement.ServiceDescription;
+
 /**
- * Class initiates dutch auction and performs it together with curator agents.
+ * ArtistManager class.
+ * 
+ * ArtistManager runs an auction in a museum. It gets a command line parameter
+ * telling what is the name of a Curator which is going to participate in the
+ * auction (for simplicity). 
+ * 
+ * ArtistManager is run in a museum container, which is non-main container. First
+ * it registers itself in DF so that main Curator knows about container operation.
+ * Then it subscribes for a Curator-Clone registration. As it occures, 
+ * ArtistManager begins a dutch auction.
  * 
  * @author tolkjen
  *
  */
 @SuppressWarnings("serial")
 public class ArtistManagerAgent extends Agent {
-
 	protected void setup() {
-		System.out.println(getAID().getLocalName() + ": begin operation");
-		
-		// Exit if there are no arguments given
 		Object[] args = getArguments();
-		if (args == null || args.length == 0) {
-			System.out.println(getAID().getLocalName() + ": no curators specified. Terminate!");
+		if (args == null || args.length != 1) {
+			System.out.println(getLocalName() + ": no curator specified. Terminate!");
 			doDelete();
+			return;
+		} 
+		
+		System.out.println(getLocalName() + ": begin operation");
+		
+		registerAgent();
+		subscribeForCurator((String) args[0]);
+	}
+	
+	private void registerAgent() {
+		// Register the tour guide service in the yellow pages.
+		DFAgentDescription dfd = new DFAgentDescription(); 
+		dfd.setName(getAID()); 
+		ServiceDescription sd = new ServiceDescription(); 
+		sd.setType("container"); 
+		sd.setName(getLocalName()); 
+		dfd.addServices(sd);
+		try { 
+			DFService.register(this, dfd);
+			System.out.println(getLocalName() + ": registered");
+		} catch (FIPAException fe) {
+			fe.printStackTrace();
 		}
+	}
+	
+	private void subscribeForCurator(final String curatorName) {
+		DFAgentDescription template = new DFAgentDescription(); 
+		template.setName(new AID(curatorName, AID.ISLOCALNAME));
+        ServiceDescription sd = new ServiceDescription(); 
+        sd.setType("curator"); 
+        template.addServices(sd);
+        SearchConstraints sc = new SearchConstraints();
+        sc.setMaxResults(new Long(2));
+		
+		addBehaviour(new SubscriptionInitiator(this, DFService.createSubscriptionMessage(this, getDefaultDF(), template, sc)) {
+			protected void handleInform(ACLMessage inform) {
+				System.out.println(getLocalName() + ": curator subscription noticed...");
+				try {
+					DFAgentDescription[] results = DFService.decodeNotification(inform.getContent());
+					if (results.length > 0) {
+						addDutchBehaviour(curatorName);
+					}	
+				}
+				catch (FIPAException fe) {
+					fe.printStackTrace();
+				}
+			}
+		} );
+	}
+	
+	private void addDutchBehaviour(String curatorName) {
+		System.out.println("Starting auction");
 		
 		// Call For Proposal message
 		ACLMessage msgCFP = new ACLMessage(ACLMessage.CFP);
 		msgCFP.setProtocol(FIPANames.InteractionProtocol.FIPA_DUTCH_AUCTION);
 		msgCFP.setReplyByDate(new Date(System.currentTimeMillis() + 3000));
-		for (int i=0; i<args.length; i++) {
-			msgCFP.addReceiver(new AID((String) args[i], AID.ISLOCALNAME));
-		}
-		
+		msgCFP.addReceiver(new AID(curatorName, AID.ISLOCALNAME));
+				
 		// Launch behavior
 		addBehaviour(new DutchInitiator(this, msgCFP, new ManagerStrategy()));
 	}
@@ -60,14 +121,19 @@ public class ArtistManagerAgent extends Agent {
 			
 			strategy = s;
 			responders = new Vector<AID>();
-			roundNumber = 1;
 			
 			Iterator it = cfp.getAllReceiver();
 			while (it.hasNext()) {
 				responders.add((AID) it.next());
 			}
 			
-			System.out.println(getLocalName()+": starting price = "+strategy.getPrice());
+			startAuction();
+		}
+		
+		private void startAuction() {
+			strategy.reset();
+			roundNumber = 1;
+			//System.out.println(getLocalName()+": starting price = "+strategy.getPrice());
 		}
 		
 		private Vector<ACLMessage> generateCFPs() {
@@ -124,12 +190,14 @@ public class ArtistManagerAgent extends Agent {
 		
 		private void handleNextRound() {
 			if (strategy.isFinalRound()) {
-				System.out.println(getLocalName()+": auction terminates (after "+roundNumber+" rounds)");
-				myAgent.doDelete();
+				//System.out.println(getLocalName()+": auction terminates (after "+roundNumber+" rounds)");
+				//myAgent.doDelete();
+				reset();
+				startAuction();
 			} else {
 				strategy.nextRound();
 				roundNumber++;
-				System.out.println(getLocalName()+": new price = "+strategy.getPrice());
+				//System.out.println(getLocalName()+": new price = "+strategy.getPrice());
 				newIteration(generateCFPs());
 			}
 		}
@@ -164,6 +232,10 @@ public class ArtistManagerAgent extends Agent {
 		
 		public boolean isFinalRound() {
 			return (currentPrice == lowestPrice);
+		}
+		
+		public void reset() {
+			currentPrice = highestPrice;
 		}
 	}
 }
