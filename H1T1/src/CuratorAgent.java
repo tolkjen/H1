@@ -1,39 +1,19 @@
-import jade.core.AID;
-
 import jade.core.Agent;
 import jade.lang.acl.*;
 
 import java.util.*;
 import jade.proto.*;
 import jade.domain.*;
-import jade.domain.FIPAAgentManagement.DFAgentDescription;
-import jade.domain.FIPAAgentManagement.NotUnderstoodException;
-import jade.domain.FIPAAgentManagement.RefuseException;
-import jade.domain.FIPAAgentManagement.ServiceDescription;
+import jade.core.*;
+
 import jade.domain.mobility.*;
 import jade.domain.FIPANames;
-import jade.content.lang.Codec;
-import jade.content.lang.Codec.CodecException;
-import jade.content.lang.sl.SLCodec;
-import jade.content.onto.OntologyException;
-import jade.content.onto.UngroundedException;
-import jade.content.onto.basic.Action;
-import jade.domain.JADEAgentManagement.WhereIsAgentAction;
-import jade.domain.FIPAAgentManagement.DFAgentDescription;
-import jade.domain.FIPAAgentManagement.SearchConstraints;
-import jade.domain.FIPAAgentManagement.ServiceDescription;
-
-import jade.lang.acl.*;
-import jade.content.*;
-import jade.content.onto.basic.*;
-import jade.content.lang.*;
-import jade.content.lang.sl.*;
-import jade.core.*;
-import jade.core.behaviours.*;
-import jade.domain.*;
-import jade.domain.mobility.*;
 import jade.domain.JADEAgentManagement.*;
-import jade.gui.*;
+import jade.content.lang.sl.SLCodec;
+import jade.content.onto.basic.*;
+import jade.domain.FIPAAgentManagement.SearchConstraints;
+import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.FIPAAgentManagement.ServiceDescription;
 
 /**
  * Curator Agent class. 
